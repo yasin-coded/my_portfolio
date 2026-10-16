@@ -2,4 +2,9 @@ venv
 .env
 __pycache__/
 dist/
+db.sqlite3
+media/
 AGENTS.md
+SPEC.md
+PLAN.md
+node_modules/
