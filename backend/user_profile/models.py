@@ -28,7 +28,7 @@ class Profile(TimeStampedModel):
 
     def clean(self):
         super().clean()
-        if not self.pk and Profile.objects.exists():
+        if Profile.objects.exclude(pk=self.pk).exists():
             raise ValidationError("A Profile instance already exists. Only one singleton profile is permitted.")
 
     def save(self, *args, **kwargs):
