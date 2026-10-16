@@ -23,6 +23,10 @@ urlpatterns = [
     path('api/', include('portfolio.urls')),
     # Blog endpoints (posts, likes, comments, categories, tags)
     path('api/', include('blog.urls')),
+    # Contact endpoints (submission and moderation)
+    path('api/', include('contact.urls')),
+    # Dashboard stats endpoint
+    path('api/dashboard/', include('dashboard.urls')),
 ]
 
 # Serve media files in development (SPEC B-23)

@@ -20,14 +20,11 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
 
-        # Enforce that only the superuser owner can obtain an owner session
-        if not self.user.is_superuser:
-            raise AuthenticationFailed('Invalid username or password.')
-
         data['user'] = {
             'id': self.user.id,
             'username': self.user.username,
             'email': self.user.email,
+            'is_superuser': self.user.is_superuser,
         }
         return data
 
