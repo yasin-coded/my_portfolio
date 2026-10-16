@@ -21,6 +21,8 @@ urlpatterns = [
     path('api/profile/', include('user_profile.urls')),
     # Portfolio endpoints (skills, skill-groups, experiences, education, projects)
     path('api/', include('portfolio.urls')),
+    # Blog endpoints (posts, likes, comments, categories, tags)
+    path('api/', include('blog.urls')),
 ]
 
 # Serve media files in development (SPEC B-23)
