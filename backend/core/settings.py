@@ -127,13 +127,26 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+from corsheaders.defaults import default_headers
+
 # CORS configuration (B-22: CORS_ALLOW_ALL_ORIGINS = True is forbidden)
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:5173,http://127.0.0.1:5173',
+    default='http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:3000,http://127.0.0.1:3000',
     cast=Csv()
 )
 CORS_ALLOW_ALL_ORIGINS = False
+
+# Allow custom client headers including X-Visitor-Id (SPEC B-10, F-5)
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    'x-visitor-id',
+)
+
+# Expose custom response headers (SPEC B-19)
+CORS_EXPOSE_HEADERS = (
+    'x-response-time',
+)
 
 # Django REST Framework configuration
 REST_FRAMEWORK = {
