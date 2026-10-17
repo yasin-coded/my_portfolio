@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { Github, Linkedin, Twitter, Globe, Mail } from 'lucide-react';
+import { FaGithub, FaLinkedin, FaXTwitter } from 'react-icons/fa6';
+import { Globe, Mail } from 'lucide-react';
 import api from '../../api/axios';
 import PageContainer from './PageContainer';
 
@@ -28,10 +29,10 @@ export function Footer() {
   const fullName = profile?.full_name || 'Portfolio Owner';
 
   const socials = [
-    { href: profile?.github_url,   icon: Github,   label: 'GitHub' },
-    { href: profile?.linkedin_url, icon: Linkedin, label: 'LinkedIn' },
-    { href: profile?.x_url,        icon: Twitter,  label: 'X / Twitter' },
-    { href: profile?.website_url,  icon: Globe,    label: 'Website' },
+    { href: profile?.github_url,   icon: FaGithub,   label: 'GitHub' },
+    { href: profile?.linkedin_url, icon: FaLinkedin, label: 'LinkedIn' },
+    { href: profile?.x_url,        icon: FaXTwitter, label: 'X / Twitter' },
+    { href: profile?.website_url,  icon: Globe,      label: 'Website' },
     { href: profile?.email ? `mailto:${profile.email}` : null, icon: Mail, label: 'Email' },
   ].filter((s) => Boolean(s.href));
 
@@ -39,7 +40,6 @@ export function Footer() {
     <footer className="w-full bg-surface border-t border-border mt-auto py-12 transition-colors duration-200">
       <PageContainer>
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-border/60">
-          {/* Status */}
           <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
@@ -52,7 +52,6 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Social icons */}
           {socials.length > 0 && (
             <div className="flex items-center gap-3">
               {socials.map(({ href, icon: Icon, label }) => (
@@ -71,7 +70,6 @@ export function Footer() {
           )}
         </div>
 
-        {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 font-mono text-xs text-text-muted">
           <p>© {currentYear} {fullName}. All rights reserved.</p>
 

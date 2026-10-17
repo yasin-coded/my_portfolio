@@ -4,15 +4,26 @@ import About   from '../components/home/About';
 import Projects from '../components/home/Projects';
 import Blog    from '../components/home/Blog';
 import Contact from '../components/home/Contact';
+import ErrorBoundary from '../components/ui/ErrorBoundary';
 
 export function HomePage() {
   return (
     <PageContainer as="main" className="py-0">
-      <Hero />
-      <About />
-      <Projects />
-      <Blog />
-      <Contact />
+      <ErrorBoundary>
+        <Hero />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <About />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <Projects />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <Blog />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <Contact />
+      </ErrorBoundary>
     </PageContainer>
   );
 }

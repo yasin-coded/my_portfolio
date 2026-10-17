@@ -36,7 +36,7 @@ export function Navbar() {
     },
     staleTime: 1000 * 60 * 10,
   });
-  const logoText = profile?.logo_text || 'DevFolio';
+  const logoText = 'yasin';
 
   // ── IntersectionObserver: highlight the visible section ─────────
   useEffect(() => {
@@ -78,7 +78,8 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-bg/85 backdrop-blur-md border-b border-border/80 transition-colors duration-200">
+    <>
+      <header className="sticky top-0 z-40 w-full bg-bg/85 backdrop-blur-md border-b border-border/80 transition-colors duration-200">
       <PageContainer>
         <div className="flex items-center justify-between h-16">
 
@@ -161,19 +162,20 @@ export function Navbar() {
           </div>
         </div>
       </PageContainer>
-
-      <MobileMenu
-        isOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-        sections={NAV_SECTIONS}
-        activeSection={activeSection}
-        isOwner={isOwner}
-        authLoading={authLoading}
-        isHomePage={isHomePage}
-        onSectionClick={(e, id) => { handleNavClick(e, id); setMobileMenuOpen(false); }}
-      />
     </header>
-  );
+
+    <MobileMenu
+      isOpen={mobileMenuOpen}
+      onClose={() => setMobileMenuOpen(false)}
+      sections={NAV_SECTIONS}
+      activeSection={activeSection}
+      isOwner={isOwner}
+      authLoading={authLoading}
+      isHomePage={isHomePage}
+      onSectionClick={(e, id) => { handleNavClick(e, id); setMobileMenuOpen(false); }}
+    />
+  </>
+);
 }
 
 export default Navbar;

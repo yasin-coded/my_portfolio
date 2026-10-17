@@ -6,14 +6,15 @@
  * frontend source (SPEC F-1 – design tokens and static UI copy are fine).
  */
 
+import myImage from '../assets/my_image.png';
+
 const profile = {
   name: 'Yasin',
   role: 'Full-Stack Developer',
   focus: ['Django & DRF', 'React & Vite', 'PostgreSQL', 'DevOps'],
   description:
     'Building clean, scalable web apps from backend APIs to pixel-perfect UIs.',
-  /** Swap this for your real photo once you add it to public/ */
-  photo: null, // e.g. '/avatar.jpg'
+  photo: myImage,
   openToWork: true,
 };
 

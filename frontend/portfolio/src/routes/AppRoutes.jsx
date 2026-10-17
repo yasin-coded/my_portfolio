@@ -1,25 +1,25 @@
-import { Routes, Route } from 'react-router-dom';
-import PublicLayout from '../components/layout/PublicLayout';
-import ProtectedRoute from './ProtectedRoute';
-import DashboardLayout from '../components/dashboard/DashboardLayout';
+import { Routes, Route } from "react-router-dom";
+import PublicLayout from "../components/layout/PublicLayout";
+import ProtectedRoute from "./ProtectedRoute";
+import DashboardLayout from "../components/dashboard/DashboardLayout";
 
 // Public
-import HomePage from '../pages/HomePage';
-import LoginPage from '../pages/LoginPage';
-import BlogDetailPage from '../pages/BlogDetailPage';
-import ProjectDetailPage from '../pages/ProjectDetailPage';
-import NotFoundPage from '../pages/NotFoundPage';
+import HomePage from "../pages/HomePage";
+import LoginPage from "../pages/LoginPage";
+import BlogDetailPage from "../pages/BlogDetailPage";
+import ProjectDetailPage from "../pages/ProjectDetailPage";
+import NotFoundPage from "../pages/NotFoundPage";
 
 // Dashboard pages
-import DashboardOverviewPage from '../pages/dashboard/DashboardOverviewPage';
-import DashboardPostsPage from '../pages/dashboard/DashboardPostsPage';
-import DashboardProjectsPage from '../pages/dashboard/DashboardProjectsPage';
-import DashboardSkillsPage from '../pages/dashboard/DashboardSkillsPage';
-import DashboardExperiencePage from '../pages/dashboard/DashboardExperiencePage';
-import DashboardTaxonomyPage from '../pages/dashboard/DashboardTaxonomyPage';
-import DashboardCommentsPage from '../pages/dashboard/DashboardCommentsPage';
-import DashboardMessagesPage from '../pages/dashboard/DashboardMessagesPage';
-import DashboardProfilePage from '../pages/dashboard/DashboardProfilePage';
+import DashboardOverviewPage from "../pages/dashboard/DashboardOverviewPage";
+import DashboardPostsPage from "../pages/dashboard/DashboardPostsPage";
+import DashboardProjectsPage from "../pages/dashboard/DashboardProjectsPage";
+import DashboardSkillsPage from "../pages/dashboard/DashboardSkillsPage";
+import DashboardExperiencePage from "../pages/dashboard/DashboardExperiencePage";
+import DashboardTaxonomyPage from "../pages/dashboard/DashboardTaxonomyPage";
+import DashboardCommentsPage from "../pages/dashboard/DashboardCommentsPage";
+import DashboardMessagesPage from "../pages/dashboard/DashboardMessagesPage";
+import DashboardProfilePage from "../pages/dashboard/DashboardProfilePage";
 
 export function AppRoutes() {
   return (

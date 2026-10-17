@@ -161,16 +161,14 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
     'DEFAULT_THROTTLE_CLASSES': (
         'rest_framework.throttling.AnonRateThrottle',
     ),
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '20/minute',       # B-17: anonymous 20/min global
-        'comment': '5/hour',       # B-17: comment creation 5/hour per IP
-        'contact': '3/hour',       # B-17: contact 3/hour per IP
-        'like': '30/minute',       # B-17: like toggle 30/min
+        'anon': config('THROTTLE_ANON_RATE', default='120/min'),
+        'comment': '5/hour',
+        'contact': '3/hour',
+        'like': '30/min',
     },
 }
 
