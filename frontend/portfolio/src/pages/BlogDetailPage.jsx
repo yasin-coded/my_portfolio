@@ -119,6 +119,7 @@ export function BlogDetailPage() {
     try {
       const payload = {
         ...data,
+        website: data.website?.trim() || undefined,
         parent: replyTo?.id || null,
       };
       await api.post(`/posts/${slug}/comments/`, payload);
@@ -129,6 +130,7 @@ export function BlogDetailPage() {
       const { message, fieldErrors } = parseApiError(err);
       if (fieldErrors.name) setError('name', { message: fieldErrors.name });
       if (fieldErrors.email) setError('email', { message: fieldErrors.email });
+      if (fieldErrors.website) setError('website', { message: fieldErrors.website });
       if (fieldErrors.content) setError('content', { message: fieldErrors.content });
       toast.error(message);
     }

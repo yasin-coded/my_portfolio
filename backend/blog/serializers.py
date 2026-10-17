@@ -250,15 +250,20 @@ class CommentCreateSerializer(serializers.ModelSerializer):
     Validation: content 5-1000 chars, name >= 2 chars, valid email.
     Saves with is_approved=False.
     """
+    website = serializers.URLField(required=False, allow_blank=True, allow_null=True)
+
     class Meta:
         model = Comment
         fields = ['id', 'post', 'name', 'email', 'website', 'content', 'parent']
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'post']
 
     def validate_name(self, value):
         if len(value.strip()) < 2:
             raise serializers.ValidationError("Name must be at least 2 characters long.")
         return value
+
+    def validate_website(self, value):
+        return value or ""
 
     def validate_content(self, value):
         length = len(value.strip())

@@ -166,7 +166,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_THROTTLE_RATES': {
         'anon': config('THROTTLE_ANON_RATE', default='120/min'),
-        'comment': '5/hour',
+        'comment': config('THROTTLE_COMMENT_RATE', default='100/min'),
         'contact': '3/hour',
         'like': '30/min',
     },
