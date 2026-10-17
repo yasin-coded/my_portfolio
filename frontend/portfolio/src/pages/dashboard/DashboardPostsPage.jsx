@@ -182,7 +182,7 @@ export function DashboardPostsPage() {
           <Link
             to={`/blog/${row.slug}`}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             aria-label="View public post"
             className="p-1.5 rounded border border-border hover:border-accent text-text-muted hover:text-accent transition-colors"
           >

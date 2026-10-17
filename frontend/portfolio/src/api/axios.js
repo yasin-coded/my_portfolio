@@ -5,9 +5,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 let isRefreshing = false;
@@ -37,6 +34,15 @@ api.interceptors.request.use(
     const visitorId = getVisitorId();
     if (visitorId) {
       config.headers['X-Visitor-Id'] = visitorId;
+    }
+
+    // File uploads: let the browser set multipart/form-data with its boundary
+    if (config.data instanceof FormData) {
+      if (typeof config.headers.setContentType === 'function') {
+        config.headers.setContentType(undefined);
+      } else {
+        delete config.headers['Content-Type'];
+      }
     }
 
     return config;

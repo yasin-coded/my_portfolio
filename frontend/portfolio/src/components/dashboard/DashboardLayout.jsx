@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   FileText,
@@ -57,10 +57,14 @@ export function DashboardLayout() {
       <aside className="w-full md:w-64 bg-surface border-r border-border flex flex-col shrink-0">
         {/* Sidebar Header */}
         <div className="p-4 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link
+            to="/"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            title="Go to website home page"
+          >
             <span className="w-2.5 h-2.5 rounded-full bg-accent animate-pulse" />
-            <span className="font-mono text-sm font-bold text-text">root@devfolio</span>
-          </div>
+            <span className="font-mono text-sm font-bold text-text">root@yasin</span>
+          </Link>
           <div className="flex items-center gap-1">
             <NavLink
               to="/"
