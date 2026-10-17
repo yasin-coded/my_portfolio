@@ -148,6 +148,10 @@ export function DashboardProjectsPage() {
   const isSubmitting = createProjectMutation.isPending || updateProjectMutation.isPending;
 
   // Open modal for create or edit
+  const handleCloseEditor = () => {
+    setIsEditorOpen(false);
+  };
+
   const handleOpenCreate = () => {
     setEditingProject(null);
     setCoverFile(null);
@@ -472,7 +476,7 @@ export function DashboardProjectsPage() {
       {/* Create / Edit Project Modal */}
       <Modal
         isOpen={isEditorOpen}
-        onClose={() => setIsEditorOpen(false)}
+        onClose={handleCloseEditor}
         title={editingProject ? `Edit Project: ${editingProject.title}` : 'Create New Project'}
         maxWidth="max-w-2xl"
         footer={
@@ -481,7 +485,7 @@ export function DashboardProjectsPage() {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => setIsEditorOpen(false)}
+              onClick={handleCloseEditor}
               disabled={isSubmitting}
             >
               Cancel

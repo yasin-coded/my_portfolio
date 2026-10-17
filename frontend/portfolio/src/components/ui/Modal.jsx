@@ -14,8 +14,13 @@ export function Modal({
 }) {
   const modalRef = useRef(null);
   const previousActiveElement = useRef(null);
+  const onCloseRef = useRef(onClose);
 
-  // Focus trap & focus return
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
+  // Focus trap & focus return (only runs when isOpen changes)
   useEffect(() => {
     if (!isOpen) return;
 
@@ -26,19 +31,27 @@ export function Modal({
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
     const timer = setTimeout(() => {
-      if (modalRef.current) {
-        const focusableElements = modalRef.current.querySelectorAll(focusableElementsSelector);
-        if (focusableElements.length > 0) {
-          focusableElements[0].focus();
+      if (modalRef.current && !modalRef.current.contains(document.activeElement)) {
+        // Prefer first input/textarea/select within the modal body if available
+        const firstField = modalRef.current.querySelector(
+          'input:not([disabled]), textarea:not([disabled]), select:not([disabled])'
+        );
+        if (firstField) {
+          firstField.focus();
         } else {
-          modalRef.current.focus();
+          const focusableElements = modalRef.current.querySelectorAll(focusableElementsSelector);
+          if (focusableElements.length > 0) {
+            focusableElements[0].focus();
+          } else {
+            modalRef.current.focus();
+          }
         }
       }
     }, 20);
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        onClose?.();
+        onCloseRef.current?.();
         return;
       }
 
@@ -78,7 +91,7 @@ export function Modal({
         previousActiveElement.current.focus();
       }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   // Lock body scroll when open
   useEffect(() => {
@@ -98,7 +111,7 @@ export function Modal({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-bg/80 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose?.();
+        if (e.target === e.currentTarget) onCloseRef.current?.();
       }}
       role="dialog"
       aria-modal="true"
@@ -128,7 +141,7 @@ export function Modal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => onCloseRef.current?.()}
             className="text-text-muted hover:text-text rounded p-1 transition-colors hover:bg-surface cursor-pointer"
             aria-label="Close modal"
           >
