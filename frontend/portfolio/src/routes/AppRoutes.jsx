@@ -13,6 +13,7 @@ import NotFoundPage from "../pages/NotFoundPage";
 // Dashboard pages
 import DashboardOverviewPage from "../pages/dashboard/DashboardOverviewPage";
 import DashboardPostsPage from "../pages/dashboard/DashboardPostsPage";
+import DashboardPostEditorPage from "../pages/dashboard/DashboardPostEditorPage";
 import DashboardProjectsPage from "../pages/dashboard/DashboardProjectsPage";
 import DashboardSkillsPage from "../pages/dashboard/DashboardSkillsPage";
 import DashboardExperiencePage from "../pages/dashboard/DashboardExperiencePage";
@@ -51,8 +52,8 @@ export function AppRoutes() {
       >
         <Route index element={<DashboardOverviewPage />} />
         <Route path="posts" element={<DashboardPostsPage />} />
-        <Route path="posts/new" element={<DashboardPostsPage />} />
-        <Route path="posts/:slug/edit" element={<DashboardPostsPage />} />
+        <Route path="posts/new" element={<DashboardPostEditorPage />} />
+        <Route path="posts/:slug/edit" element={<DashboardPostEditorPage />} />
         <Route path="projects" element={<DashboardProjectsPage />} />
         <Route path="skills" element={<DashboardSkillsPage />} />
         <Route path="experience" element={<DashboardExperiencePage />} />

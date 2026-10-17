@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import api from '../api/axios';
+import { queryClient } from '../api/queryClient';
 
 const AuthContext = createContext();
 
@@ -74,6 +75,7 @@ export function AuthProvider({ children }) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       setUser(null);
+      queryClient.clear();
     }
   };
 

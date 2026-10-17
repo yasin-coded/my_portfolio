@@ -24,7 +24,7 @@ class Profile(TimeStampedModel):
     is_available_for_hire = models.BooleanField(default=True)
     hero_pitch = models.CharField(max_length=255, blank=True)
     typed_roles = models.JSONField(default=list, blank=True, help_text="List of strings for typing effect in hero")
-    logo_text = models.CharField(max_length=50, default="DevFolio")
+    logo_text = models.CharField(max_length=50, default="yasin")
 
     def clean(self):
         super().clean()

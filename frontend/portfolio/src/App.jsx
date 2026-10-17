@@ -6,20 +6,7 @@ import { AuthProvider } from './context/AuthContext';
 import AppRoutes from './routes/AppRoutes';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchOnWindowFocus: false,
-      retry: (failureCount, error) => {
-        const status = error?.response?.status;
-        if (status >= 400 && status < 500 && status !== 408) return false;
-        if (status === 429) return false;
-        return failureCount < 1;
-      },
-    },
-  },
-});
+import { queryClient } from './api/queryClient';
 
 function ThemedToaster() {
   const { theme } = useTheme();

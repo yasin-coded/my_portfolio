@@ -82,7 +82,18 @@ class PostListSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'slug', 'views_count', 'reading_time', 'published_at', 'created_at', 'updated_at']
+        read_only_fields = [
+            'id',
+            'slug',
+            'author',
+            'views_count',
+            'reading_time',
+            'published_at',
+            'likes_count',
+            'comments_count',
+            'created_at',
+            'updated_at',
+        ]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -136,7 +147,20 @@ class PostDetailSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'slug', 'views_count', 'reading_time', 'published_at', 'created_at', 'updated_at']
+        read_only_fields = [
+            'id',
+            'slug',
+            'author',
+            'views_count',
+            'reading_time',
+            'published_at',
+            'likes_count',
+            'comments_count',
+            'is_liked',
+            'related_posts',
+            'created_at',
+            'updated_at',
+        ]
 
     def get_likes_count(self, obj):
         return obj.likes.count()

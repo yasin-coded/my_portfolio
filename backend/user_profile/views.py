@@ -39,7 +39,7 @@ class ProfileView(APIView):
                 "is_available_for_hire": True,
                 "hero_pitch": "",
                 "typed_roles": [],
-                "logo_text": "DevFolio",
+                "logo_text": "yasin",
             }
             return Response(default_data, status=status.HTTP_200_OK)
         serializer = ProfileSerializer(profile, context={'request': request})
