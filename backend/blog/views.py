@@ -94,18 +94,39 @@ class PostViewSet(viewsets.ModelViewSet):
             comments_count=Count('comments', filter=Q(comments__is_approved=True), distinct=True)
         )
 
-        # Access control: visitors see PUBLISHED only
-        if not (user.is_authenticated and user.is_superuser):
-            return qs.filter(status='PUBLISHED')
+        # Owner can request drafts or all posts explicitly
+        if user.is_authenticated and user.is_superuser:
+            status_param = self.request.query_params.get('status')
+            if status_param == 'DRAFT':
+                return qs.filter(status='DRAFT')
+            elif status_param == 'all':
+                return qs
+            elif status_param == 'PUBLISHED':
+                return qs.filter(status='PUBLISHED')
 
-        # Owner status filter support
-        status_param = self.request.query_params.get('status')
-        if status_param == 'DRAFT':
-            return qs.filter(status='DRAFT')
-        elif status_param == 'PUBLISHED':
-            return qs.filter(status='PUBLISHED')
+        # Public (including logged-in owner without explicit ?status): published only
+        return qs.filter(status='PUBLISHED')
 
-        return qs
+    def get_object(self):
+        """
+        For detail actions (retrieve, update, partial_update, destroy) the owner
+        must be able to access draft posts by slug without adding ?status to the URL.
+        Public visitors still get 404 for drafts via the PUBLISHED-only queryset.
+        """
+        user = self.request.user
+        if user.is_authenticated and user.is_superuser and self.action in (
+            'retrieve', 'update', 'partial_update', 'destroy'
+        ):
+            # Full queryset without status filter for owner detail access
+            qs = Post.objects.select_related('category', 'author').prefetch_related('tags').annotate(
+                likes_count=Count('likes', distinct=True),
+                comments_count=Count('comments', filter=Q(comments__is_approved=True), distinct=True)
+            )
+            filter_kwargs = {self.lookup_field: self.kwargs[self.lookup_field]}
+            obj = get_object_or_404(qs, **filter_kwargs)
+            self.check_object_permissions(self.request, obj)
+            return obj
+        return super().get_object()
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()

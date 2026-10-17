@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   BookOpen,
   Calendar,
@@ -17,22 +17,90 @@ import { Card, CardContent } from '../ui/Card';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Skeleton from '../ui/Skeleton';
+import Pagination from '../ui/Pagination';
 import { formatDate } from '../../utils/formatDate';
 
-export function Blog() {
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [searchQuery, setSearchQuery] = useState('');
+const PAGE_SIZE = 6;
 
-  // ── Fetch published posts ─────────────────────────────────────────
-  const { data: postsData, isLoading: postsLoading } = useQuery({
-    queryKey: ['posts'],
+export function Blog() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sectionRef = useRef(null);
+
+  // ── Read state from URL ───────────────────────────────────────────
+  const currentPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+  const searchQuery = searchParams.get('search') || '';
+  const selectedCategory = searchParams.get('category') || 'ALL';
+
+  // ── Helpers to update URL ─────────────────────────────────────────
+  function setParam(key, value) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value && value !== 'ALL' && value !== '') {
+        next.set(key, value);
+      } else {
+        next.delete(key);
+      }
+      next.delete('page');
+      return next;
+    });
+  }
+
+  function goToPage(page) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (page <= 1) {
+        next.delete('page');
+      } else {
+        next.set('page', String(page));
+      }
+      return next;
+    });
+    sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── Build API params ──────────────────────────────────────────────
+  const apiParams = {
+    page: currentPage,
+    page_size: PAGE_SIZE,
+    ...(searchQuery ? { search: searchQuery } : {}),
+    ...(selectedCategory !== 'ALL' ? { category: selectedCategory } : {}),
+    ordering: '-published_at',
+  };
+
+  // ── Fetch published posts (paginated) ─────────────────────────────
+  const { data: postsData, isLoading: postsLoading, isError } = useQuery({
+    queryKey: ['posts', apiParams],
     queryFn: async () => {
-      const res = await api.get('/posts/');
-      return Array.isArray(res.data) ? res.data : res.data?.results || [];
+      const res = await api.get('/posts/', { params: apiParams });
+      return res.data && Array.isArray(res.data.results)
+        ? res.data
+        : { count: 0, next: null, previous: null, results: [] };
+    },
+    staleTime: 1000 * 60 * 5,
+    keepPreviousData: true,
+  });
+
+  const posts = postsData?.results || [];
+  const totalCount = postsData?.count ?? 0;
+
+  // ── Unfiltered total: always shows the full published count ───────
+  const { data: totalData } = useQuery({
+    queryKey: ['posts-total-published'],
+    queryFn: async () => {
+      const res = await api.get('/posts/', { params: { page: 1, page_size: 1 } });
+      return res.data?.count ?? 0;
     },
     staleTime: 1000 * 60 * 5,
   });
-  const posts = postsData || [];
+  const totalPublished = totalData ?? totalCount;
+
+  // ── Guard: if page is beyond last, fall back to page 1 ───────────
+  useEffect(() => {
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+    if (totalCount > 0 && currentPage > totalPages) {
+      goToPage(1);
+    }
+  }, [totalCount, currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Fetch categories ──────────────────────────────────────────────
   const { data: categories = [] } = useQuery({
@@ -44,23 +112,12 @@ export function Blog() {
     staleTime: 1000 * 60 * 10,
   });
 
-  // Filter posts
-  const filteredPosts = useMemo(() => {
-    return posts.filter((post) => {
-      const matchesCategory =
-        selectedCategory === 'ALL' ||
-        post.category_slug === selectedCategory ||
-        post.category_name?.toLowerCase() === selectedCategory.toLowerCase();
-      const matchesSearch =
-        !searchQuery ||
-        post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.excerpt?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-  }, [posts, selectedCategory, searchQuery]);
-
   return (
-    <section id="blog" className="scroll-mt-20 py-20 border-t border-border/40">
+    <section
+      id="blog"
+      ref={sectionRef}
+      className="scroll-mt-20 py-20 border-t border-border/40"
+    >
       <div className="flex flex-col gap-10">
         {/* ── Section Title ──────────────────────────────────────── */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -83,7 +140,7 @@ export function Blog() {
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => setParam('search', e.target.value)}
               placeholder="grep article_title..."
               className="w-full bg-surface-2/60 border border-border/80 rounded-md pl-9 pr-4 py-2 font-mono text-xs text-text placeholder:text-text-muted/60 focus:outline-none focus:border-accent transition-colors"
             />
@@ -94,14 +151,14 @@ export function Blog() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() => setSelectedCategory('ALL')}
+            onClick={() => setParam('category', 'ALL')}
             className={`font-mono text-xs px-3.5 py-1.5 rounded-full border transition-all duration-150 ${
               selectedCategory === 'ALL'
                 ? 'bg-accent text-on-accent border-accent font-semibold shadow-sm'
                 : 'bg-surface-2/50 border-border/80 text-text-muted hover:text-text hover:border-accent/40'
             }`}
           >
-            All Articles ({posts.length})
+            All Articles ({totalPublished})
           </button>
           {categories.map((cat) => {
             const isActive = selectedCategory === cat.slug;
@@ -109,7 +166,7 @@ export function Blog() {
               <button
                 key={cat.id}
                 type="button"
-                onClick={() => setSelectedCategory(cat.slug)}
+                onClick={() => setParam('category', cat.slug)}
                 className={`font-mono text-xs px-3.5 py-1.5 rounded-full border transition-all duration-150 ${
                   isActive
                     ? 'bg-accent text-on-accent border-accent font-semibold shadow-sm'
@@ -117,6 +174,7 @@ export function Blog() {
                 }`}
               >
                 {cat.name}
+                {cat.posts_count != null && ` (${cat.posts_count})`}
               </button>
             );
           })}
@@ -136,20 +194,23 @@ export function Blog() {
               </Card>
             ))}
           </div>
-        ) : filteredPosts.length === 0 ? (
+        ) : isError ? (
+          <div className="p-12 rounded-lg bg-surface border border-border text-center font-mono text-sm text-text-muted flex flex-col items-center gap-3">
+            <Terminal className="w-8 h-8 text-accent/40" />
+            <p>bash: Failed to load posts. Please try again.</p>
+          </div>
+        ) : posts.length === 0 ? (
           <div className="p-12 rounded-lg bg-surface border border-border text-center font-mono text-sm text-text-muted flex flex-col items-center gap-3">
             <Terminal className="w-8 h-8 text-accent/40" />
             <p>
-              bash: No posts found matching query in <span className="text-accent">/var/log/posts/</span>
+              bash: No posts found matching query in{' '}
+              <span className="text-accent">/var/log/posts/</span>
             </p>
             {(searchQuery || selectedCategory !== 'ALL') && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  setSelectedCategory('ALL');
-                  setSearchQuery('');
-                }}
+                onClick={() => setSearchParams({})}
               >
                 Clear filters
               </Button>
@@ -157,7 +218,7 @@ export function Blog() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPosts.map((post) => (
+            {posts.map((post) => (
               <Card
                 key={post.id}
                 hoverable
@@ -262,6 +323,16 @@ export function Blog() {
               </Card>
             ))}
           </div>
+        )}
+
+        {/* ── Pagination ─────────────────────────────────────────── */}
+        {!postsLoading && !isError && (
+          <Pagination
+            currentPage={currentPage}
+            totalCount={totalCount}
+            pageSize={PAGE_SIZE}
+            onPageChange={goToPage}
+          />
         )}
       </div>
     </section>

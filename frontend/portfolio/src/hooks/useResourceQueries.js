@@ -54,17 +54,27 @@ export function useEducation() {
   });
 }
 
-export function useProjects() {
+export function useProjects(params = {}) {
   return useQuery({
-    queryKey: ['projects'],
-    queryFn: async () => paginatedResponse('/projects/'),
+    queryKey: ['projects', params],
+    queryFn: async () => {
+      const response = await api.get('/projects/', { params });
+      return response.data && Array.isArray(response.data.results)
+        ? response.data
+        : { count: 0, next: null, previous: null, results: [] };
+    },
   });
 }
 
-export function usePosts() {
+export function usePosts(params = {}) {
   return useQuery({
-    queryKey: ['posts'],
-    queryFn: async () => paginatedResponse('/posts/'),
+    queryKey: ['posts', params],
+    queryFn: async () => {
+      const response = await api.get('/posts/', { params });
+      return response.data && Array.isArray(response.data.results)
+        ? response.data
+        : { count: 0, next: null, previous: null, results: [] };
+    },
   });
 }
 

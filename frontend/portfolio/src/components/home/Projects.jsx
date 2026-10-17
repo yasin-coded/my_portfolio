@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   FolderGit2,
   ExternalLink,
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 import { useProjects } from "../../hooks/useResourceQueries";
+import Pagination from "../ui/Pagination";
 import { Card, CardContent } from "../ui/Card";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
@@ -26,27 +27,63 @@ const CATEGORIES = [
   { id: "OTHER", label: "Tools & CLI" },
 ];
 
+const PAGE_SIZE = 9;
+
 export function Projects() {
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sectionRef = useRef(null);
 
-  const { data, isLoading, isError, error, refetch } = useProjects();
-  const projects = data?.results ?? data ?? [];
+  // ── Read state from URL ─────────────────────────────────────────
+  const currentPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+  const searchQuery = searchParams.get('search') || '';
+  const selectedCategory = searchParams.get('category') || 'ALL';
 
-  const filteredProjects = useMemo(() => {
-    return projects.filter((project) => {
-      const matchesCategory =
-        selectedCategory === "ALL" || project.category === selectedCategory;
-      const matchesSearch =
-        !searchQuery ||
-        project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.tech_stack_details?.some((t) =>
-          t.name.toLowerCase().includes(searchQuery.toLowerCase()),
-        );
-      return matchesCategory && matchesSearch;
+  // ── Helpers to update URL ───────────────────────────────────────
+  function setParam(key, value) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value && value !== 'ALL' && value !== '') {
+        next.set(key, value);
+      } else {
+        next.delete(key);
+      }
+      next.delete('page');
+      return next;
     });
-  }, [projects, selectedCategory, searchQuery]);
+  }
+
+  function goToPage(page) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (page <= 1) {
+        next.delete('page');
+      } else {
+        next.set('page', String(page));
+      }
+      return next;
+    });
+    sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── Build API params ────────────────────────────────────────────
+  const apiParams = {
+    page: currentPage,
+    page_size: PAGE_SIZE,
+    ...(searchQuery ? { search: searchQuery } : {}),
+    ...(selectedCategory !== 'ALL' ? { category: selectedCategory } : {}),
+  };
+
+  const { data, isLoading, isError, error, refetch } = useProjects(apiParams);
+  const projects = data?.results ?? [];
+  const totalCount = data?.count ?? 0;
+
+  // ── Guard: if page is beyond last, fall back to page 1 ─────────
+  useEffect(() => {
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+    if (totalCount > 0 && currentPage > totalPages) {
+      goToPage(1);
+    }
+  }, [totalCount, currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const errorMessage =
     error?.response?.status === 429
@@ -57,6 +94,7 @@ export function Projects() {
     <ErrorBoundary>
       <section
         id="projects"
+        ref={sectionRef}
         className="scroll-mt-20 py-20 border-t border-border/40"
       >
         <div className="flex flex-col gap-10">
@@ -80,7 +118,7 @@ export function Projects() {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => setParam('search', e.target.value)}
                 placeholder="grep project_name..."
                 className="w-full bg-surface-2/60 border border-border/80 rounded-md pl-9 pr-4 py-2 font-mono text-xs text-text placeholder:text-text-muted/60 focus:outline-none focus:border-accent transition-colors"
               />
@@ -90,18 +128,19 @@ export function Projects() {
           <div className="flex flex-wrap items-center gap-2">
             {CATEGORIES.map(({ id, label }) => {
               const isActive = selectedCategory === id;
+              const chipLabel = id === 'ALL' ? `${label} (${totalCount})` : label;
               return (
                 <button
                   key={id}
                   type="button"
-                  onClick={() => setSelectedCategory(id)}
+                  onClick={() => setParam('category', id)}
                   className={`font-mono text-xs px-3.5 py-1.5 rounded-full border transition-all duration-150 ${
                     isActive
                       ? "bg-accent text-on-accent border-accent font-semibold shadow-sm"
                       : "bg-surface-2/50 border-border/80 text-text-muted hover:text-text hover:border-accent/40"
                   }`}
                 >
-                  {label}
+                  {chipLabel}
                 </button>
               );
             })}
@@ -128,7 +167,7 @@ export function Projects() {
                 Retry
               </Button>
             </div>
-          ) : filteredProjects.length === 0 ? (
+          ) : projects.length === 0 ? (
             <div className="p-12 rounded-lg bg-surface border border-border text-center font-mono text-sm text-text-muted flex flex-col items-center gap-3 relative z-10">
               <Terminal className="w-8 h-8 text-accent/40" />
               <p>
@@ -139,10 +178,7 @@ export function Projects() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    setSelectedCategory("ALL");
-                    setSearchQuery("");
-                  }}
+                  onClick={() => setSearchParams({})}
                 >
                   Clear filters
                 </Button>
@@ -150,7 +186,7 @@ export function Projects() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
-              {filteredProjects.map((project) => (
+              {projects.map((project) => (
                 <Card
                   key={project.id}
                   hoverable
@@ -275,6 +311,16 @@ export function Projects() {
                 </Card>
               ))}
             </div>
+          )}
+
+          {/* ── Pagination ──────────────────────────────────────── */}
+          {!isLoading && !isError && (
+            <Pagination
+              currentPage={currentPage}
+              totalCount={totalCount}
+              pageSize={PAGE_SIZE}
+              onPageChange={goToPage}
+            />
           )}
         </div>
       </section>
