@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   FolderGit2,
   ExternalLink,
@@ -9,6 +10,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
+import api from "../../api/axios";
 import { useProjects } from "../../hooks/useResourceQueries";
 import Pagination from "../ui/Pagination";
 import { Card, CardContent } from "../ui/Card";
@@ -77,6 +79,27 @@ export function Projects() {
   const projects = data?.results ?? [];
   const totalCount = data?.count ?? 0;
 
+  // ── Unfiltered total and category counts ──────────────────────────
+  const { data: allProjectsData } = useQuery({
+    queryKey: ['projects-all-unfiltered'],
+    queryFn: async () => {
+      const res = await api.get('/projects/', { params: { page: 1, page_size: 50 } });
+      return res.data && Array.isArray(res.data.results)
+        ? res.data
+        : { count: 0, next: null, previous: null, results: [] };
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const totalProjects = allProjectsData?.count ?? totalCount;
+
+  const categoryCounts = (allProjectsData?.results || []).reduce((acc, p) => {
+    if (p.category) {
+      acc[p.category] = (acc[p.category] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
   // ── Guard: if page is beyond last, fall back to page 1 ─────────
   useEffect(() => {
     const totalPages = Math.ceil(totalCount / PAGE_SIZE);
@@ -128,7 +151,10 @@ export function Projects() {
           <div className="flex flex-wrap items-center gap-2">
             {CATEGORIES.map(({ id, label }) => {
               const isActive = selectedCategory === id;
-              const chipLabel = id === 'ALL' ? `${label} (${totalCount})` : label;
+              const count = id === 'ALL' ? totalProjects : categoryCounts[id] ?? 0;
+              const chipLabel = allProjectsData || id === 'ALL'
+                ? `${label} (${count})`
+                : label;
               return (
                 <button
                   key={id}
