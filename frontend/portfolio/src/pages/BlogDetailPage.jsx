@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ReactMarkdown from 'react-markdown';
@@ -33,6 +33,16 @@ export function BlogDetailPage() {
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [replyTo, setReplyTo] = useState(null); // { id, name }
+  const commentFormRef = useRef(null);
+
+  const handleReplyClick = (target) => {
+    setReplyTo(target);
+    commentFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => {
+      const textarea = commentFormRef.current?.querySelector('textarea');
+      textarea?.focus();
+    }, 150);
+  };
 
   // ── Fetch Post Details ──────────────────────────────────────────
   const { data: post, isLoading: postLoading, isError } = useQuery({
@@ -126,6 +136,7 @@ export function BlogDetailPage() {
       reset();
       setReplyTo(null);
       toast.success('Your comment is awaiting approval.');
+      queryClient.invalidateQueries({ queryKey: ['post-comments', slug] });
     } catch (err) {
       const { message, fieldErrors } = parseApiError(err);
       if (fieldErrors.name) setError('name', { message: fieldErrors.name });
@@ -349,7 +360,7 @@ export function BlogDetailPage() {
           </div>
 
           {/* Comment Form */}
-          <Card className="border-border/80 bg-surface/90">
+          <Card ref={commentFormRef} className="border-border/80 bg-surface/90">
             <CardHeader className="py-3 px-4 bg-surface-2/40 border-b border-border/60 flex-row items-center justify-between">
               <CardTitle as="h4" className="text-sm text-accent font-mono flex items-center gap-2">
                 <Terminal className="w-4 h-4" />
@@ -361,7 +372,7 @@ export function BlogDetailPage() {
                 <button
                   type="button"
                   onClick={() => setReplyTo(null)}
-                  className="font-mono text-xs text-text-muted hover:text-danger"
+                  className="font-mono text-xs text-text-muted hover:text-danger cursor-pointer"
                 >
                   [Cancel reply]
                 </button>
@@ -476,8 +487,8 @@ export function BlogDetailPage() {
                     <div className="flex justify-end pt-2 border-t border-border/40">
                       <button
                         type="button"
-                        onClick={() => setReplyTo({ id: comment.id, name: comment.name })}
-                        className="text-xs text-text-muted hover:text-accent flex items-center gap-1 font-mono"
+                        onClick={() => handleReplyClick({ id: comment.id, name: comment.name })}
+                        className="text-xs text-text-muted hover:text-accent flex items-center gap-1 font-mono cursor-pointer"
                       >
                         <CornerDownRight className="w-3 h-3" />
                         Reply
@@ -503,6 +514,16 @@ export function BlogDetailPage() {
                             <p className="font-sans text-xs text-text/90 leading-relaxed whitespace-pre-line">
                               {reply.content}
                             </p>
+                            <div className="flex justify-end pt-1 border-t border-border/30">
+                              <button
+                                type="button"
+                                onClick={() => handleReplyClick({ id: comment.id, name: reply.name })}
+                                className="text-xs text-text-muted hover:text-accent flex items-center gap-1 font-mono cursor-pointer"
+                              >
+                                <CornerDownRight className="w-3 h-3" />
+                                Reply
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>

@@ -223,7 +223,7 @@ class CommentReplySerializer(serializers.ModelSerializer):
     """Nested 1-level reply for public comment thread (SPEC S-8: no email)."""
     class Meta:
         model = Comment
-        fields = ['id', 'name', 'website', 'content', 'created_at']
+        fields = ['id', 'name', 'website', 'content', 'parent', 'created_at']
 
 
 class PublicCommentSerializer(serializers.ModelSerializer):
@@ -273,9 +273,9 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 
     def validate_parent(self, value):
         if value:
-            # Enforce max 1 level of nesting: parent must not have a parent itself
+            # Enforce max 1 level of nesting: if replying to a reply, attach to its root parent
             if value.parent is not None:
-                raise serializers.ValidationError("Replies cannot be nested more than one level deep.")
+                return value.parent
         return value
 
     def create(self, validated_data):
